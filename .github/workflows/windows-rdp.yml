@@ -1,0 +1,40 @@
+name: Windows RDP Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  secure-rdp:
+    runs-on: windows-latest
+    timeout-minutes: 3600
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Core RDP Settings
+        shell: pwsh
+        run: .github/workflows/scripts/win-configure-rdp.ps1
+
+      - name: Create RDP User with Secure Password
+        shell: pwsh
+        run: .github/workflows/scripts/win-create-user.ps1
+
+      - name: Install Tailscale
+        shell: pwsh
+        run: .github/workflows/scripts/win-install-tailscale.ps1
+
+      - name: Establish Tailscale Connection
+        shell: pwsh
+        env:
+          TAILSCALE_AUTH_KEY: ${{ secrets.TAILSCALE_AUTH_KEY }}
+        run: .github/workflows/scripts/win-establish-ts.ps1
+
+      - name: Verify RDP Accessibility
+        shell: pwsh
+        run: .github/workflows/scripts/win-verify-rdp.ps1
+
+      - name: Maintain Connection
+        shell: pwsh
+        run: |
+          Write-Host "`n=== RD
